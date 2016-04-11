@@ -11,7 +11,7 @@ This proposal seeks to provide a safer `..<`
 (aka [half-open range operator](https://github.com/apple/swift/blob/510f29abf77e202780c11d5f6c7449313c819030/stdlib/public/core/Range.swift#L193))
 in order to avoid `Array index out of range` errors during the execution time.
 
-Swift-evolution thread: [link to the discussion thread for that proposal](https://lists.swift.org/pipermail/swift-evolution/Week-of-Mon-20160411/014676.html)
+Swift-evolution thread: [link to the discussion thread for that proposal](http://thread.gmane.org/gmane.comp.lang.swift.evolution/14252)
 
 ## Motivation
 
