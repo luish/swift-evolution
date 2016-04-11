@@ -82,7 +82,7 @@ slicing it -- and consequently runtime errors in cases when the programmer didn'
 
 ## Detailed design
 
-It does not need any change in the language syntax. It is all about
+It does not require any change in the language syntax. It is all about
 the internal behavior of the existing implementation for the operator
 when applied to arrays.
 
