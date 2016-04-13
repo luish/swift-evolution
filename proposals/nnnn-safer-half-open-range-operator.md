@@ -67,7 +67,7 @@ if a.count > 5 {
 
 The proposed solution is to slice the array returning all elements that are
 below the half-open operator, even though the number of elements is lesser
-than the ending of the half-open operator.
+than the ending of the range.
 
 ```swift
 let a = [1,2,3]
@@ -91,6 +91,17 @@ when applied to arrays.
 It does not cause any impact on existing code.
 
 ## Alternatives considered
+
+As [proposed by Haravikk and Vladimir in the mail list thread](http://thread.gmane.org/gmane.comp.lang.swift.evolution/14252/focus=14253), perhaps a variation of the operator would be a better approach, making the user responsible for deciding whether to use the operator implicit or explicitly, just like [Overflow Operators](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/AdvancedOperators.html#//apple_ref/doc/uid/TP40014097-CH27-ID37) do.
+
+Considering a new operator, let's say `&..<` (aka _'safer half-open operator'_), the following statement
+
+```swift
+let a = [1,2,3]
+let b = a[-1 &..< 5]
+```
+
+would be equivalent to `let b = a[max(0, a.initialIndex) ..< min(5, a.endIndex)]`, which becomes `let b = a[0 ..< 3]` and does not raise any error or throw any exception in execution time.
 
 Another alternative would be to make this operator `Throwable`
 motivated by this blog post published by @erica:
