@@ -101,7 +101,7 @@ let a = [1,2,3]
 let b = a[-1 &..< 5]
 ```
 
-would be equivalent to `let b = a[max(0, a.initialIndex) ..< min(5, a.endIndex)]`, which becomes `let b = a[0 ..< 3]` and does not raise any error or throw any exception in execution time.
+would be equivalent to `let b = a[max(0, a.startIndex) ..< min(5, a.endIndex)]`, which becomes `let b = a[0 ..< 3]` and does not raise any error or throw any exception in execution time.
 
 Another alternative would be to make this operator `Throwable`
 motivated by this blog post published by @erica:
