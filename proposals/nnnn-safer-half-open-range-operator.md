@@ -92,6 +92,45 @@ It does not cause any impact on existing code.
 
 ## Alternatives considered
 
+### 1. New labeled _subscript_ methods over Collections
+
+The [mail list discussion](http://thread.gmane.org/gmane.comp.lang.swift.evolution/14252/focus=14382) converged in a wider improvement in the language that surely is worth considering.
+
+The main point is to provide a convenient interface to let the user slice _collections_ implicit and explicitly through new labeled _subscript_ alternatives. Using this approach the current "fail fast" behaviour would not be touched at all.
+
+#### - subscript(`truncate` range: Range&lt;Int&gt;)
+
+Returns exactly what I proposed initially, clamping the range to the array's bounds, i.e. `array.indices`, before applying the subscript on it. In the following example
+
+```swift
+let a = [1,2,3]
+let b = a[truncate: -1 ..< 5]
+```
+
+the range would be converted to `[0 ..< 3]` and `b` would result in `[1,2,3]`.
+
+#### - subscript(`safe` range: Range&lt;Int&gt;)
+
+Returns `nil` whenever the range is out of bounds, instead of throwing a _fatal error_ in execution time. This behaviour would be consistent if compared with dictionaries, other collection type in which the _subscript_ function returns `nil` if the dictionary does not contain the key given by the user.
+
+Applying this operator in the previous examples,
+
+```swift
+let a = [1,2,3]
+let b = a[safe: 0 ..< 5]
+```
+
+would produce `b` equal to `nil`.
+
+
+In summary, considering `a = [1,2,3]`:
+
+- `a[0 ..< 5]` results in _fatal error_, the current implementation.
+- `a[truncate: 0 ..< 5]` produces `[1,2,3]` just like originally proposed here.
+- `a[safe: 0 ... 5]` returns `nil` indicating that the range is invalid, but does not throw an error.
+
+#### 2. New operator `&..<`
+
 As [proposed by Haravikk and Vladimir in the mail list thread](http://thread.gmane.org/gmane.comp.lang.swift.evolution/14252/focus=14253), perhaps a variation of the operator would be a better approach, making the user responsible for deciding whether to use the operator implicit or explicitly, just like [Overflow Operators](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/AdvancedOperators.html#//apple_ref/doc/uid/TP40014097-CH27-ID37) do.
 
 Considering a new operator, let's say `&..<` (aka _'safer half-open operator'_), the following statement
