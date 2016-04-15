@@ -120,14 +120,14 @@ let a = [1,2,3]
 let b = a[safe: 0 ..< 5]
 ```
 
-would produce `b` equal to `nil`.
+would produce `b` equals to `nil`.
 
 
 In summary, considering `a = [1,2,3]`:
 
 - `a[0 ..< 5]` results in _fatal error_, the current implementation.
 - `a[truncate: 0 ..< 5]` produces `[1,2,3]` just like originally proposed here.
-- `a[safe: 0 ... 5]` returns `nil` indicating that the range is invalid, but does not throw an error.
+- `a[safe: 0 ... 5]` returns `nil` indicating that the range is invalid, but not throwing any error.
 
 #### 2. New operator `&..<`
 
