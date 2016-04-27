@@ -1,6 +1,6 @@
 # More lenient subscript methods over Collections
 
-* Proposal: [SE-NNNN](https://github.com/apple/swift-evolution/blob/master/proposals/nnnn-safer-collections-subscript-methods.md)
+* Proposal: [SE-NNNN](https://github.com/apple/swift-evolution/blob/master/proposals/nnnn-more-lenient-collections-subscripts.md)
 * Author(s): [Luis Henrique Borges](https://github.com/luish)
 * Status: TBD
 * Review manager: TBD
