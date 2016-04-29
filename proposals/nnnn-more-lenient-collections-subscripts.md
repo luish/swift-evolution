@@ -47,12 +47,12 @@ Ruby:
 => [1, 2, 3]
 ```
 
-Considering that, the motivation is to provide a native and
-handy interface to perform those operations in a simpler way.
-It would eliminate the need for validations, reduce the number of fatal errors
-in runtime (if the validation was not effectively done by the user)
-and also simplify the code in cases where the subsequence length can be less
-than the range size.
+Considering that, the motivation is to have a
+handy interface that allows more clean code in 
+cases where either validations on collections 
+bounds are not required or the expected subsequence
+can have less elements than the size of the 
+range provided by the user.
 
 ## Proposed solution
 
@@ -106,7 +106,9 @@ let b = a[lenient: 5] // nil
 
 This behaviour could be considered consistent with dictionaries, other
 collection type in which the _subscript_ function returns `nil` if the
-dictionary does not contain the key given by the user.
+dictionary does not contain the key given by the user. Similarly, it
+could be compared with `first` and `last`, which are very handy 
+optionals `T?` that are `nil` whenever the collection is empty.
 
 In summary, considering `a = [1,2,3]`:
 
