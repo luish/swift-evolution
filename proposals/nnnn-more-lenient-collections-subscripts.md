@@ -64,7 +64,7 @@ These new subscript methods, described in more details below, would either trunc
 the range to the collection indices or return `nil` in cases where the range/index is
 out of bounds.
 
-#### - subscript(`truncate` range: Range&lt;Index&gt;) -> SubSequence
+#### - subscript(`bounded` range: Range&lt;Index&gt;) -> SubSequence
 
 The proposed solution is to clamp the range to the collection's bounds
 before applying the subscript on it.
@@ -73,13 +73,13 @@ In the following example,
 
 ```swift
 let a = [1,2,3]
-let b = a[truncate: -1 ..< 5]
+let b = a[bounded: -1 ..< 5]
 ```
 
 the range would be equivalent to `max(-1, a.startIndex) ..< min(5, a.endIndex)`
 which becomes `0 ..< 3` and `b` results in `[1,2,3]`.
 
-#### - subscript(`lenient` range: Range&lt;Index&gt;) -> SubSequence?
+#### - subscript(`optional` range: Range&lt;Index&gt;) -> SubSequence?
 
 Returns `nil` whenever the range is out of bounds,
 instead of throwing a _fatal error_ in execution time.
@@ -88,20 +88,20 @@ In the example below, `b` would be equal to `nil`.
 
 ```swift
 let a = [1,2,3]
-let b = a[lenient: 0 ..< 5]
+let b = a[optional: 0 ..< 5]
 ```
 
-_* The label "lenient" is just an idea, it could be other word in this context of a
-permissive/tolerant approach._
+_* The label "optional" is just an idea, it could be other word in this context of a
+lenient (or permissive, tolerant) approach._
 
-#### - subscript(`lenient` index: Index) -> Element?
+#### - subscript(`optional` index: Index) -> Element?
 
 Similar behaviour as the previous method, but given an _Index_ instead.
 Returns `nil` if the index is out of bounds.
 
 ```swift
 let a = [1,2,3]
-let b = a[lenient: 5] // nil
+let b = a[optional: 5] // nil
 ```
 
 This behaviour could be considered consistent with dictionaries, other
@@ -113,9 +113,9 @@ optionals `T?` that are `nil` whenever the collection is empty.
 In summary, considering `a = [1,2,3]`:
 
 - `a[0 ..< 5]` results in _fatal error_, the current implementation (_fail fast_).
-- `a[truncate: 0 ..< 5]` turns into `a[truncate: 0 ..< 3]` and produces `[1,2,3]`.
-- `a[lenient: 0 ... 5]` returns `nil` indicating that the range is invalid, but not throwing any error.
-- `a[lenient: 3]` also returns `nil`, as the valid range is `0 ..< 3`.
+- `a[bounded: 0 ..< 5]` turns into `a[0 ..< 3]` and produces `[1,2,3]`.
+- `a[optional: 0 ... 5]` returns `nil` indicating that the range is invalid, but not throwing any error.
+- `a[optional: 3]` also returns `nil`, as the valid range is `0 ..< 3`.
 
 ## Detailed design
 
@@ -124,19 +124,19 @@ This is a simple implementation for the _subscript_ methods I am proposing:
 ```swift
 extension CollectionType where Index: Comparable {
 
-    subscript(truncate range: Range<Index>) -> SubSequence {
+    subscript(bounded range: Range<Index>) -> SubSequence {
         let start = max(startIndex, range.startIndex)
         let end = min(endIndex, range.endIndex)
         return self[start ..< end]
     }
 
-    subscript(lenient range: Range<Index>) -> SubSequence? {
+    subscript(optional range: Range<Index>) -> SubSequence? {
         guard range.startIndex >= startIndex && range.endIndex <= endIndex
             else { return nil }
         return self[range]
     }
 
-    subscript(lenient index: Index) -> Generator.Element? {
+    subscript(optional index: Index) -> Generator.Element? {
         guard index >= startIndex && index < endIndex
             else { return nil }
         return self[index]
@@ -150,21 +150,21 @@ Examples:
 ```swift
 let a = [1, 2, 3]
 
-a[truncate: 0 ..< 5] // [1, 2, 3]
-a[truncate: -1 ..< 2] // [1, 2]
-a[truncate: 1 ..< 2] // [2]
-a[truncate: 3 ..< 4] // []
-a[truncate: 4 ..< 3] // Fatal error: end < start
+a[bounded: 0 ..< 5] // [1, 2, 3]
+a[bounded: -1 ..< 2] // [1, 2]
+a[bounded: 1 ..< 2] // [2]
+a[bounded: 3 ..< 4] // []
+a[bounded: 4 ..< 3] // Fatal error: end < start
 
-a[lenient: -1 ..< 5] // nil
-a[lenient: -1 ..< 2] // nil
-a[lenient: 0 ..< 5] // nil
-a[lenient: 1 ..< 3] // [2, 3]
-a[lenient: 4 ..< 3] // Fatal error: end < start
+a[optional: -1 ..< 5] // nil
+a[optional: -1 ..< 2] // nil
+a[optional: 0 ..< 5] // nil
+a[optional: 1 ..< 3] // [2, 3]
+a[optional: 4 ..< 3] // Fatal error: end < start
 
-a[lenient: 0] // 1
-a[lenient: -1] // nil
-a[lenient: 3] // nil
+a[optional: 0] // 1
+a[optional: -1] // nil
+a[optional: 3] // nil
 ```
 
 ## Impact on existing code
