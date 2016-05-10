@@ -48,10 +48,10 @@ Ruby:
 ```
 
 Considering that, the motivation is to have a
-handy interface that allows more clean code in 
-cases where either validations on collections 
+handy interface that allows more clean code in
+cases where either validations on collections
 bounds are not required or the expected subsequence
-can have less elements than the size of the 
+can have less elements than the size of the
 range provided by the user.
 
 ## Proposed solution
@@ -64,7 +64,7 @@ These new subscript methods, described in more details below, would either trunc
 the range to the collection indices or return `nil` in cases where the range/index is
 out of bounds.
 
-#### - subscript(`bounded` range: Range&lt;Index&gt;) -> SubSequence
+#### - subscript(`within` range: Range&lt;Index&gt;) -> SubSequence
 
 The proposed solution is to clamp the range to the collection's bounds
 before applying the subscript on it.
@@ -73,13 +73,13 @@ In the following example,
 
 ```swift
 let a = [1,2,3]
-let b = a[bounded: -1 ..< 5]
+let b = a[within: -1 ..< 5]
 ```
 
 the range would be equivalent to `max(-1, a.startIndex) ..< min(5, a.endIndex)`
 which becomes `0 ..< 3` and `b` results in `[1,2,3]`.
 
-#### - subscript(`optional` range: Range&lt;Index&gt;) -> SubSequence?
+#### - subscript(`checking` range: Range&lt;Index&gt;) -> SubSequence?
 
 Returns `nil` whenever the range is out of bounds,
 instead of throwing a _fatal error_ in execution time.
@@ -88,34 +88,31 @@ In the example below, `b` would be equal to `nil`.
 
 ```swift
 let a = [1,2,3]
-let b = a[optional: 0 ..< 5]
+let b = a[checking: 0 ..< 5]
 ```
 
-_* The label "optional" is just an idea, it could be other word in this context of a
-lenient (or permissive, tolerant) approach._
-
-#### - subscript(`optional` index: Index) -> Element?
+#### - subscript(`checking` index: Index) -> Element?
 
 Similar behaviour as the previous method, but given an _Index_ instead.
 Returns `nil` if the index is out of bounds.
 
 ```swift
 let a = [1,2,3]
-let b = a[optional: 5] // nil
+let b = a[checking: 5] // nil
 ```
 
 This behaviour could be considered consistent with dictionaries, other
 collection type in which the _subscript_ function returns `nil` if the
 dictionary does not contain the key given by the user. Similarly, it
-could be compared with `first` and `last`, which are very handy 
+could be compared with `first` and `last`, which are very handy
 optionals `T?` that are `nil` whenever the collection is empty.
 
 In summary, considering `a = [1,2,3]`:
 
 - `a[0 ..< 5]` results in _fatal error_, the current implementation (_fail fast_).
-- `a[bounded: 0 ..< 5]` turns into `a[0 ..< 3]` and produces `[1,2,3]`.
-- `a[optional: 0 ... 5]` returns `nil` indicating that the range is invalid, but not throwing any error.
-- `a[optional: 3]` also returns `nil`, as the valid range is `0 ..< 3`.
+- `a[within: 0 ..< 5]` turns into `a[0 ..< 3]` and produces `[1,2,3]`.
+- `a[checking: 0 ... 5]` returns `nil` indicating that the range is invalid, but not throwing any error.
+- `a[checking: 3]` also returns `nil`, as the valid range is `0 ..< 3`.
 
 ## Detailed design
 
@@ -124,19 +121,19 @@ This is a simple implementation for the _subscript_ methods I am proposing:
 ```swift
 extension CollectionType where Index: Comparable {
 
-    subscript(bounded range: Range<Index>) -> SubSequence {
+    subscript(within range: Range<Index>) -> SubSequence {
         let start = max(startIndex, range.startIndex)
         let end = min(endIndex, range.endIndex)
         return self[start ..< end]
     }
 
-    subscript(optional range: Range<Index>) -> SubSequence? {
+    subscript(checking range: Range<Index>) -> SubSequence? {
         guard range.startIndex >= startIndex && range.endIndex <= endIndex
             else { return nil }
         return self[range]
     }
 
-    subscript(optional index: Index) -> Generator.Element? {
+    subscript(checking index: Index) -> Generator.Element? {
         guard index >= startIndex && index < endIndex
             else { return nil }
         return self[index]
@@ -150,21 +147,21 @@ Examples:
 ```swift
 let a = [1, 2, 3]
 
-a[bounded: 0 ..< 5] // [1, 2, 3]
-a[bounded: -1 ..< 2] // [1, 2]
-a[bounded: 1 ..< 2] // [2]
-a[bounded: 3 ..< 4] // []
-a[bounded: 4 ..< 3] // Fatal error: end < start
+a[within: 0 ..< 5] // [1, 2, 3]
+a[within: -1 ..< 2] // [1, 2]
+a[within: 1 ..< 2] // [2]
+a[within: 3 ..< 4] // []
+a[within: 4 ..< 3] // Fatal error: end < start
 
-a[optional: -1 ..< 5] // nil
-a[optional: -1 ..< 2] // nil
-a[optional: 0 ..< 5] // nil
-a[optional: 1 ..< 3] // [2, 3]
-a[optional: 4 ..< 3] // Fatal error: end < start
+a[checking: -1 ..< 5] // nil
+a[checking: -1 ..< 2] // nil
+a[checking: 0 ..< 5] // nil
+a[checking: 1 ..< 3] // [2, 3]
+a[checking: 4 ..< 3] // Fatal error: end < start
 
-a[optional: 0] // 1
-a[optional: -1] // nil
-a[optional: 3] // nil
+a[checking: 0] // 1
+a[checking: -1] // nil
+a[checking: 3] // nil
 ```
 
 ## Impact on existing code
