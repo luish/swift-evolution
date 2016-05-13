@@ -64,7 +64,7 @@ These new subscript methods, described in more details below, would either trunc
 the range to the collection indices or return `nil` in cases where the range/index is
 out of bounds.
 
-#### - subscript(`within` range: Range&lt;Index&gt;) -> SubSequence
+#### - subscript(`clamping` range: Range&lt;Index&gt;) -> SubSequence
 
 The proposed solution is to clamp the range to the collection's bounds
 before applying the subscript on it.
@@ -73,7 +73,7 @@ In the following example,
 
 ```swift
 let a = [1,2,3]
-let b = a[within: -1 ..< 5]
+let b = a[clamping: -1 ..< 5]
 ```
 
 the range would be equivalent to `max(-1, a.startIndex) ..< min(5, a.endIndex)`
@@ -110,7 +110,7 @@ optionals `T?` that are `nil` whenever the collection is empty.
 In summary, considering `a = [1,2,3]`:
 
 - `a[0 ..< 5]` results in _fatal error_, the current implementation (_fail fast_).
-- `a[within: 0 ..< 5]` turns into `a[0 ..< 3]` and produces `[1,2,3]`.
+- `a[clamping: 0 ..< 5]` turns into `a[0 ..< 3]` and produces `[1,2,3]`.
 - `a[checking: 0 ... 5]` returns `nil` indicating that the range is invalid, but not throwing any error.
 - `a[checking: 3]` also returns `nil`, as the valid range is `0 ..< 3`.
 
@@ -121,7 +121,7 @@ This is a simple implementation for the _subscript_ methods I am proposing:
 ```swift
 extension CollectionType where Index: Comparable {
 
-    subscript(within range: Range<Index>) -> SubSequence {
+    subscript(clamping range: Range<Index>) -> SubSequence {
         let start = max(startIndex, range.startIndex)
         let end = min(endIndex, range.endIndex)
         return self[start ..< end]
@@ -147,11 +147,11 @@ Examples:
 ```swift
 let a = [1, 2, 3]
 
-a[within: 0 ..< 5] // [1, 2, 3]
-a[within: -1 ..< 2] // [1, 2]
-a[within: 1 ..< 2] // [2]
-a[within: 3 ..< 4] // []
-a[within: 4 ..< 3] // Fatal error: end < start
+a[clamping: 0 ..< 5] // [1, 2, 3]
+a[clamping: -1 ..< 2] // [1, 2]
+a[clamping: 1 ..< 2] // [2]
+a[clamping: 3 ..< 4] // []
+a[clamping: 4 ..< 3] // Fatal error: end < start
 
 a[checking: -1 ..< 5] // nil
 a[checking: -1 ..< 2] // nil
